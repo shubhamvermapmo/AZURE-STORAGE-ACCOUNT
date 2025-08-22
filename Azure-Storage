@@ -1,0 +1,83 @@
+Connect-AzAccount                                     //"USE TO CONNECT WITH THE PORTAL"
+--------------------------------------------------
+Get-AzLocation | Select-Object -Property Location      
+$Location = 'eastus'                                  //"THIS WILL LIST ALL THE POSSIBLE REGION INSIDE AZURE"
+---------------------------------------------------
+$ResourceGroup = 'MyResourceGroup'
+New-AzResourceGroup -Name $ResourceGroup -Location $Location      ///"IT WILL CREATE RESOURCE GROUP AND WILL CREATE A RESOURCE IN EAST-US"
+
+------------------------------------------------------
+$StorageHT = @{                                           "IT WILL CREATE A STORAGE ACCOUNT INSIDE EAST-US WITH THE NAME MY STORAGE ACCOUNT AND STANDARD LRS SKU"
+  ResourceGroupName = $ResourceGroup
+  Name              = 'mystorageaccount'
+  SkuName           = 'Standard_LRS'
+  Location          =  $Location
+}
+$StorageAccount = New-AzStorageAccount @StorageHT
+$Context = $StorageAccount.Context
+
+------------------------------------------------
+$ContainerName = 'quickstartblobs'                       "IT WILL CREATE A CONTAINER INSIDE AZURE STORAGE
+New-AzStorageContainer -Name $ContainerName -Context $Context
+
+-------------------------------------------------
+                                                     // upload a file to the default account (inferred) access tier             //
+$Blob1HT = @{
+  File             = 'D:\Images\Image001.jpg'
+  Container        = $ContainerName
+  Blob             = "Image001.jpg"
+  Context          = $Context
+  StandardBlobTier = 'Hot'
+}
+Set-AzStorageBlobContent @Blob1HT
+-------------------------------------------------
+                                                   // upload another file to the Cool access tier
+ $Blob2HT = @{
+  File             = 'D:\Images\Image002.jpg'
+  Container        = $ContainerName
+  Blob             = 'Image002.png'
+  Context          = $Context
+  StandardBlobTier = 'Cool'
+ }
+ Set-AzStorageBlobContent @Blob2HT
+  
+                                                  // upload a file to a folder to the Archive access tier
+$Blob3HT = @{
+  File             = 'D:\Images\FolderName\Image003.jpg'
+  Container        = $ContainerName
+  Blob             = 'FolderName/Image003.jpg'
+  Context          = $Context
+  StandardBlobTier = 'Archive'
+}
+Set-AzStorageBlobContent @Blob3HT
+----------------------------------------------------------
+
+Get-AzStorageBlob -Container $ContainerName -Context $Context |        //IT WILL LIST ALL THE BLOBS INSIDE THE CONTAINER
+  Select-Object -Property Name
+----------------------------------------------------------
+                                                               //Download first blob
+$DLBlob1HT = @{
+  Blob        = 'Image001.jpg'
+  Container   = $ContainerName
+  Destination = 'D:\Images\Downloads\'
+  Context     = $Context
+}
+Get-AzStorageBlobContent @DLBlob1HT
+----------------------------------------------------------
+                                                             //Download another blob
+$DLBlob2HT = @{
+  Blob        = 'Image002.png'
+  Container   = $ContainerName
+  Destination = 'D:\Images\Downloads\'
+  Context     = $Context  
+}
+Get-AzStorageBlobContent @DLBlob2HT
+----------------------------------------------------------
+
+azcopy login                                                 //Data Transfer
+azcopy copy 'D:\Images\Image001.jpg' "https://$StorageAccountName.blob.core.windows.net/$ContainerName/NewGaphic.jpg"
+----------------------------------------------------------
+
+Remove-AzResourceGroup -Name $ResourceGroup                  //Remove the resource Group
+
+
