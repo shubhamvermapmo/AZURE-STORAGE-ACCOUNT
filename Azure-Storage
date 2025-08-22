@@ -40,7 +40,7 @@ Set-AzStorageBlobContent @Blob1HT
   StandardBlobTier = 'Cool'
  }
  Set-AzStorageBlobContent @Blob2HT
-  
+-------------------------------------------------
                                                   // upload a file to a folder to the Archive access tier
 $Blob3HT = @{
   File             = 'D:\Images\FolderName\Image003.jpg'
@@ -79,5 +79,5 @@ azcopy copy 'D:\Images\Image001.jpg' "https://$StorageAccountName.blob.core.wind
 ----------------------------------------------------------
 
 Remove-AzResourceGroup -Name $ResourceGroup                  //Remove the resource Group
-
+----------------------------------------------------------
 
